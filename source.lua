@@ -312,33 +312,36 @@ function Lib:CreateSlider(tab, sliderName, minValue, maxValue, startValue, callb
     sliderButton.BorderSizePixel = 0
     sliderButton.ZIndex = 2
 
+    local function updateSlider(value)
+        local percentage = (value - minValue) / (maxValue - minValue)
+        sliderButton.Position = UDim2.new(percentage, 0, 0.5, -10)
+        sliderText.Text = sliderName .. ": " .. tostring(math.floor(value + 0.5)) -- Round to nearest integer
+    end
+
     sliderButton.MouseButton1Down:Connect(function()
         local input = game:GetService("UserInputService")
-        local startPos = sliderButton.AbsolutePosition
-        local startOffset = startPos.X - input.MousePosition.X
-
-        local function moveSlider()
-            local sliderPos = input.MousePosition.X + startOffset - tablist.AbsolutePosition.X
-            local percentage = math.clamp(sliderPos / slider.AbsoluteSize.X, 0, 1)
-            local value = minValue + percentage * (maxValue - minValue)
-            sliderButton.Position = UDim2.new(percentage, 0, 0.5, -10)
-            sliderText.Text = sliderName .. ": " .. tostring(math.floor(value + 0.5)) -- Round to nearest integer
-            callback(value)
-        end
-
-        moveSlider()
-        local conn1 = input.InputChanged:Connect(function()
-            if input.UserInputState == Enum.UserInputState.Change then
-                moveSlider()
+        local conn
+        conn = input.InputChanged:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseMovement then
+                local mousePos = inp.Position.X
+                local framePos = slider.AbsolutePosition.X
+                local frameSize = slider.AbsoluteSize.X
+                local relativePos = (mousePos - framePos) / frameSize
+                local newValue = minValue + (maxValue - minValue) * math.clamp(relativePos, 0, 1)
+                updateSlider(newValue)
+                callback(newValue)
             end
         end)
 
-        local conn2
-        conn2 = input.MouseButton1Up:Connect(function()
-            conn1:Disconnect()
-            conn2:Disconnect()
+        input.InputEnded:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                conn:Disconnect()
+            end
         end)
     end)
+
+    updateSlider(startValue)
+    callback(startValue)
 
     table.insert(sliders, slider)
 
