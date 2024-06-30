@@ -253,7 +253,7 @@ function Lib:CreateButton(tab, buttonName, callback)
     return button
 end
 
-function Lib:AddSlider(tabContent, SliderConfig)
+function Lib:AddSlider(tab, SliderConfig)
     SliderConfig.Name = SliderConfig.Name or "Slider"
     SliderConfig.Min = SliderConfig.Min or 0
     SliderConfig.Max = SliderConfig.Max or 100
@@ -263,31 +263,18 @@ function Lib:AddSlider(tabContent, SliderConfig)
     SliderConfig.ValueName = SliderConfig.ValueName or ""
     SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
 
-    local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
-    local Dragging = false
+    local Slider = {}
 
-    local SliderDrag = Instance.new("Frame")
-    SliderDrag.Name = "SliderDrag"
-    SliderDrag.Parent = tabContent
-    SliderDrag.Size = UDim2.new(0, 0, 1, 0)
-    SliderDrag.BackgroundColor3 = SliderConfig.Color
-    SliderDrag.BackgroundTransparency = 0.3
-    SliderDrag.ClipsDescendants = true
-
-    local SliderValueLabel = Instance.new("TextLabel")
-    SliderValueLabel.Name = "ValueLabel"
-    SliderValueLabel.Parent = SliderDrag
-    SliderValueLabel.Size = UDim2.new(1, -12, 0, 14)
-    SliderValueLabel.Position = UDim2.new(0, 12, 0, 6)
-    SliderValueLabel.Font = Enum.Font.GothamBold
-    SliderValueLabel.Text = tostring(SliderConfig.Default) .. " " .. SliderConfig.ValueName
-    SliderValueLabel.TextColor3 = Color3.new(1, 1, 1)
-    SliderValueLabel.BackgroundTransparency = 1
-    SliderValueLabel.TextTransparency = 0
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Name = SliderConfig.Name
+    SliderFrame.Size = UDim2.new(0, 200, 0, 50)
+    SliderFrame.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
+    SliderFrame.BorderSizePixel = 0
+    SliderFrame.Parent = tab
 
     local SliderBar = Instance.new("Frame")
     SliderBar.Name = "SliderBar"
-    SliderBar.Parent = tabContent
+    SliderBar.Parent = SliderFrame
     SliderBar.Size = UDim2.new(1, -24, 0, 26)
     SliderBar.Position = UDim2.new(0, 12, 0, 30)
     SliderBar.BackgroundColor3 = SliderConfig.Color
@@ -327,31 +314,36 @@ function Lib:AddSlider(tabContent, SliderConfig)
         local percentage = (value - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
         SliderButton.Position = UDim2.new(percentage, 0, 0.5, -10)
         SliderText.Text = tostring(math.floor(value + 0.5)) .. " " .. SliderConfig.ValueName
-        SliderValueLabel.Text = tostring(math.floor(value + 0.5)) .. " " .. SliderConfig.ValueName
     end
 
+    local Dragging = false
     SliderButton.MouseButton1Down:Connect(function()
         Dragging = true
     end)
+
+    local function setValue(value)
+        value = math.clamp(value, SliderConfig.Min, SliderConfig.Max)
+        value = math.floor(value / SliderConfig.Increment) * SliderConfig.Increment
+
+        updateSlider(value)
+        SliderConfig.Callback(value)
+    end
 
     UserInputService.InputChanged:Connect(function(input)
         if Dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local sizeScale = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
             local newValue = SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * sizeScale
-
-            newValue = math.clamp(newValue, SliderConfig.Min, SliderConfig.Max)
-            newValue = math.floor(newValue / SliderConfig.Increment) * SliderConfig.Increment
-
-            updateSlider(newValue)
-            SliderConfig.Callback(newValue)
-
-            Slider.Value = newValue
+            setValue(newValue)
         end
     end)
 
     SliderButton.MouseButton1Up:Connect(function()
         Dragging = false
     end)
+
+    function Slider:Destroy()
+        SliderFrame:Destroy()
+    end
 
     return Slider
 end
