@@ -18,6 +18,7 @@ local tablist
 local tabs = {}
 local buttons = {}
 local toggles = {}
+local sliders = {} -- New table to hold sliders
 
 function Lib:CreateWindow(name)
     if not mainframe then
@@ -153,6 +154,10 @@ function Lib:CreateWindow(name)
                 for _, toggle in ipairs(toggles) do
                     toggle.Visible = false
                 end
+
+                for _, slider in ipairs(sliders) do
+                    slider.Visible = false
+                end
             else
                 mainframe.BackgroundTransparency = 0
                 functionslist.Visible = true
@@ -165,6 +170,10 @@ function Lib:CreateWindow(name)
 
                 for _, toggle in ipairs(toggles) do
                     toggle.Visible = true
+                end
+
+                for _, slider in ipairs(sliders) do
+                    slider.Visible = true
                 end
             end
         end)
@@ -276,6 +285,73 @@ function Lib:MakeToggle(tab, toggleName, callback)
     end
 
     return toggle
+end
+
+function Lib:CreateSlider(tab, sliderName, minValue, maxValue, startValue, callback)
+    local slider = Instance.new("Frame")
+    slider.Name = sliderName
+    slider.Size = UDim2.new(0, 200, 0, 50)
+    slider.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
+    slider.BorderSizePixel = 0
+    slider.Parent = tab
+
+    local sliderText = Instance.new("TextLabel", slider)
+    sliderText.Name = "SliderText"
+    sliderText.Text = sliderName .. ": " .. tostring(startValue)
+    sliderText.Size = UDim2.new(0, 200, 0, 50)
+    sliderText.TextColor3 = Color3.new(1, 1, 1)
+    sliderText.Font = Enum.Font.GothamBold
+    sliderText.TextSize = 24
+    sliderText.BackgroundTransparency = 1
+
+    local sliderButton = Instance.new("TextButton", slider)
+    sliderButton.Name = "SliderButton"
+    sliderButton.Size = UDim2.new(0, 20, 0, 20)
+    sliderButton.Position = UDim2.new((startValue - minValue) / (maxValue - minValue), 0, 0.5, -10)
+    sliderButton.BackgroundColor3 = Color3.new(1, 1, 1)
+    sliderButton.BorderSizePixel = 0
+    sliderButton.ZIndex = 2
+
+    sliderButton.MouseButton1Down:Connect(function()
+        local input = game:GetService("UserInputService")
+        local startPos = sliderButton.AbsolutePosition
+        local startOffset = startPos.X - input.MousePosition.X
+
+        local function moveSlider()
+            local sliderPos = input.MousePosition.X + startOffset - tablist.AbsolutePosition.X
+            local percentage = math.clamp(sliderPos / slider.AbsoluteSize.X, 0, 1)
+            local value = minValue + percentage * (maxValue - minValue)
+            sliderButton.Position = UDim2.new(percentage, 0, 0.5, -10)
+            sliderText.Text = sliderName .. ": " .. tostring(math.floor(value + 0.5)) -- Round to nearest integer
+            callback(value)
+        end
+
+        moveSlider()
+        local conn1 = input.InputChanged:Connect(function()
+            if input.UserInputState == Enum.UserInputState.Change then
+                moveSlider()
+            end
+        end)
+
+        local conn2
+        conn2 = input.MouseButton1Up:Connect(function()
+            conn1:Disconnect()
+            conn2:Disconnect()
+        end)
+    end)
+
+    table.insert(sliders, slider)
+
+    local listLayout = tab:FindFirstChildOfClass("UIListLayout")
+    if not listLayout then
+        listLayout = Instance.new("UIListLayout")
+        listLayout.Parent = tab
+        listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        listLayout.Padding = UDim.new(0, 2.5)
+    end
+
+    return slider
 end
 
 return Lib
