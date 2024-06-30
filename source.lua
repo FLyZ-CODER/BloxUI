@@ -215,26 +215,27 @@ function Lib:CreateButton(tab, buttonName, callback)
     local button = Instance.new("TextButton")
     button.Name = buttonName
     button.Size = UDim2.new(0, 200, 0, 50)
-    button.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
+    button.BackgroundColor3 = Color3.new(0.75, 0.75, 0.75)
     button.BorderSizePixel = 0
     button.Text = buttonName
     button.TextColor3 = Color3.new(1, 1, 1)
     button.Font = Enum.Font.GothamBold
     button.TextSize = 24
-    button.Parent = tab
+    button.Parent = mainframe:FindFirstChild("FunctionsList")
 
     table.insert(buttons, button)
 
     button.MouseButton1Click:Connect(callback)
 end
 
-function Lib:AddSlider(tab, settings)
+function Lib:AddSlider(settings)
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Name = settings.Name .. "Frame"
     sliderFrame.Size = UDim2.new(0, 200, 0, 50)
     sliderFrame.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
     sliderFrame.BorderSizePixel = 0
-    sliderFrame.Parent = tab
+    sliderFrame.Position = UDim2.new(0, 0, 1, -100)
+    sliderFrame.Parent = mainframe
 
     local sliderLabel = Instance.new("TextLabel")
     sliderLabel.Name = settings.Name .. "Label"
@@ -262,29 +263,29 @@ function Lib:AddSlider(tab, settings)
     valueLabel.TextXAlignment = Enum.TextXAlignment.Right
     valueLabel.Parent = sliderFrame
 
-    local slider = Instance.new("TextButton")
-    slider.Name = settings.Name .. "Slider"
-    slider.Size = UDim2.new(1, 0, 0, 30)
-    slider.Position = UDim2.new(0, 0, 1, -30)
-    slider.AutoButtonColor = false
-    slider.BackgroundColor3 = Color3.new(0.75, 0.75, 0.75)
-    slider.BorderSizePixel = 0
-    slider.Text = ""
-    slider.Parent = sliderFrame
+    local sliderButton = Instance.new("TextButton")
+    sliderButton.Name = settings.Name .. "Slider"
+    sliderButton.Size = UDim2.new(1, 0, 0, 30)
+    sliderButton.Position = UDim2.new(0, 0, 1, -30)
+    sliderButton.AutoButtonColor = false
+    sliderButton.BackgroundColor3 = Color3.new(0.75, 0.75, 0.75)
+    sliderButton.BorderSizePixel = 0
+    sliderButton.Text = ""
+    sliderButton.Parent = sliderFrame
 
     local sliderValue = Instance.new("Frame")
     sliderValue.Name = settings.Name .. "SliderValue"
     sliderValue.Size = UDim2.new((settings.Default - settings.Min) / (settings.Max - settings.Min), 0, 1, 0)
     sliderValue.BackgroundColor3 = Color3.new(1, 1, 1)
     sliderValue.BorderSizePixel = 0
-    sliderValue.Parent = slider
+    sliderValue.Parent = sliderButton
 
     sliders[settings.Name] = sliderFrame
 
     local dragging = false
     local function updateValue(posX)
-        local absPosX = math.clamp(posX - slider.AbsolutePosition.X, 0, slider.AbsoluteSize.X)
-        local value = settings.Min + ((absPosX / slider.AbsoluteSize.X) * (settings.Max - settings.Min))
+        local absPosX = math.clamp(posX - sliderButton.AbsolutePosition.X, 0, sliderButton.AbsoluteSize.X)
+        local value = settings.Min + ((absPosX / sliderButton.AbsoluteSize.X) * (settings.Max - settings.Min))
         value = math.floor(value + 0.5)
         value = math.clamp(value, settings.Min, settings.Max)
         valueLabel.Text = tostring(value) .. settings.ValueName
@@ -292,7 +293,7 @@ function Lib:AddSlider(tab, settings)
         settings.Callback(value)
     end
 
-    slider.MouseButton1Down:Connect(function()
+    sliderButton.MouseButton1Down:Connect(function()
         dragging = true
         updateValue(UserInputService:GetMouseLocation().X)
     end)
