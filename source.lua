@@ -18,7 +18,6 @@ local tablist
 local tabs = {}
 local buttons = {}
 local toggles = {}
-local sliders = {} -- New table to hold sliders
 
 function Lib:CreateWindow(name)
     if not mainframe then
@@ -154,10 +153,6 @@ function Lib:CreateWindow(name)
                 for _, toggle in ipairs(toggles) do
                     toggle.Visible = false
                 end
-
-                for _, slider in ipairs(sliders) do
-                    slider.Visible = false
-                end
             else
                 mainframe.BackgroundTransparency = 0
                 functionslist.Visible = true
@@ -170,10 +165,6 @@ function Lib:CreateWindow(name)
 
                 for _, toggle in ipairs(toggles) do
                     toggle.Visible = true
-                end
-
-                for _, slider in ipairs(sliders) do
-                    slider.Visible = true
                 end
             end
         end)
@@ -253,107 +244,38 @@ function Lib:CreateButton(tab, buttonName, callback)
     return button
 end
 
-function Lib:AddSlider(SliderConfig.Name, SliderConfig.Min, SliderConfig.Max, SliderConfig.Increment, SliderConfig.Default, SliderConfig.ValueName, SliderConfig.Color)
-    SliderConfig.Name = SliderConfig.Name or "Slider"
-    SliderConfig.Min = SliderConfig.Min or 0
-    SliderConfig.Max = SliderConfig.Max or 100
-    SliderConfig.Increment = SliderConfig.Increment or 1
-    SliderConfig.Default = SliderConfig.Default or 50
-    SliderConfig.Callback = SliderConfig.Callback or function() end
-    SliderConfig.ValueName = SliderConfig.ValueName or ""
-    SliderConfig.Color = SliderConfig.Color or Color3.fromRGB(9, 149, 98)
+function Lib:MakeToggle(tab, toggleName, callback)
+    local toggle = Instance.new("TextButton")
+    toggle.Name = toggleName
+    toggle.Size = UDim2.new(0, 200, 0, 50)
+    toggle.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
+    toggle.BorderSizePixel = 0
+    toggle.Text = toggleName .. " Off"
+    toggle.TextColor3 = Color3.new(1, 1, 1)
+    toggle.Font = Enum.Font.GothamBold
+    toggle.TextSize = 24
+    toggle.Parent = tab
 
-    local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save}
-    local Dragging = false
+    local isOn = false
 
-    local SliderDrag = Instance.new("Frame")
-    SliderDrag.Name = "SliderDrag"
-    SliderDrag.Parent = ItemParent -- Замените ItemParent на вашу переменную, указывающую на родительский элемент
-    SliderDrag.Size = UDim2.new(0, 0, 1, 0)
-    SliderDrag.BackgroundColor3 = SliderConfig.Color
-    SliderDrag.BackgroundTransparency = 0.3
-    SliderDrag.ClipsDescendants = true
+    toggle.MouseButton1Click:Connect(function()
+        isOn = not isOn
+        toggle.Text = toggleName .. (isOn and " On" or " Off")
+        callback(isOn)
+    end)
 
-    local SliderValueLabel = Instance.new("TextLabel")
-    SliderValueLabel.Name = "ValueLabel"
-    SliderValueLabel.Parent = SliderDrag
-    SliderValueLabel.Size = UDim2.new(1, -12, 0, 14)
-    SliderValueLabel.Position = UDim2.new(0, 12, 0, 6)
-    SliderValueLabel.Font = Enum.Font.GothamBold
-    SliderValueLabel.Text = tostring(SliderConfig.Default) .. " " .. SliderConfig.ValueName
-    SliderValueLabel.TextColor3 = Color3.new(1, 1, 1)
-    SliderValueLabel.BackgroundTransparency = 1
-    SliderValueLabel.TextTransparency = 0
+    table.insert(toggles, toggle)
 
-    local SliderBar = Instance.new("Frame")
-    SliderBar.Name = "SliderBar"
-    SliderBar.Parent = ItemParent -- Замените ItemParent на вашу переменную, указывающую на родительский элемент
-    SliderBar.Size = UDim2.new(1, -24, 0, 26)
-    SliderBar.Position = UDim2.new(0, 12, 0, 30)
-    SliderBar.BackgroundColor3 = SliderConfig.Color
-    SliderBar.BorderSizePixel = 0
-
-    local SliderStroke = Instance.new("Frame")
-    SliderStroke.Name = "Stroke"
-    SliderStroke.Parent = SliderBar
-    SliderStroke.BackgroundColor3 = SliderConfig.Color
-    SliderStroke.BorderSizePixel = 0
-    SliderStroke.Size = UDim2.new(1, 0, 1, 0)
-
-    local SliderText = Instance.new("TextLabel")
-    SliderText.Name = "ValueText"
-    SliderText.Parent = SliderBar
-    SliderText.Size = UDim2.new(1, -12, 0, 14)
-    SliderText.Position = UDim2.new(0, 12, 0, 6)
-    SliderText.Font = Enum.Font.GothamBold
-    SliderText.Text = tostring(SliderConfig.Default) .. " " .. SliderConfig.ValueName
-    SliderText.TextColor3 = Color3.new(1, 1, 1)
-    SliderText.BackgroundTransparency = 1
-    SliderText.TextTransparency = 0.8
-
-    local SliderButton = Instance.new("TextButton")
-    SliderButton.Name = "SliderButton"
-    SliderButton.Parent = SliderBar
-    SliderButton.Size = UDim2.new(0, 20, 0, 20)
-    SliderButton.BackgroundColor3 = Color3.new(1, 1, 1)
-    SliderButton.BorderSizePixel = 0
-    SliderButton.Position = UDim2.new((SliderConfig.Default - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min), 0, 0.5, -10)
-    SliderButton.Text = "."
-    SliderButton.TextColor3 = Color3.new(0, 0, 0)
-    SliderButton.Font = Enum.Font.GothamBold
-    SliderButton.ZIndex = 2
-
-    local function updateSlider(value)
-        local percentage = (value - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
-        SliderButton.Position = UDim2.new(percentage, 0, 0.5, -10)
-        SliderText.Text = tostring(math.floor(value + 0.5)) .. " " .. SliderConfig.ValueName
-        SliderValueLabel.Text = tostring(math.floor(value + 0.5)) .. " " .. SliderConfig.ValueName
+    local listLayout = tab:FindFirstChildOfClass("UIListLayout")
+    if not listLayout then
+        listLayout = Instance.new("UIListLayout")
+        listLayout.Parent = tab
+        listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        listLayout.Padding = UDim.new(0, 2.5)
     end
 
-    SliderButton.MouseButton1Down:Connect(function()
-        Dragging = true
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if Dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local sizeScale = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-            local newValue = SliderConfig.Min + (SliderConfig.Max - SliderConfig.Min) * sizeScale
-
-            newValue = math.clamp(newValue, SliderConfig.Min, SliderConfig.Max)
-            newValue = math.floor(newValue / SliderConfig.Increment) * SliderConfig.Increment
-
-            updateSlider(newValue)
-            SliderConfig.Callback(newValue)
-
-            Slider.Value = newValue
-        end
-    end)
-
-    SliderButton.MouseButton1Up:Connect(function()
-        Dragging = false
-    end)
-
-    return Slider
+    return toggle
 end
 
 return Lib
