@@ -253,7 +253,7 @@ function Lib:CreateButton(tab, buttonName, callback)
     return button
 end
 
-function Lib:AddSlider(SliderConfig.Name, SliderConfig.Min, SliderConfig.Max, SliderConfig.Increment, SliderConfig.Default, SliderConfig.ValueName, SliderConfig.Color)
+function Lib:AddSlider(tabContent, SliderConfig)
     SliderConfig.Name = SliderConfig.Name or "Slider"
     SliderConfig.Min = SliderConfig.Min or 0
     SliderConfig.Max = SliderConfig.Max or 100
@@ -268,7 +268,7 @@ function Lib:AddSlider(SliderConfig.Name, SliderConfig.Min, SliderConfig.Max, Sl
 
     local SliderDrag = Instance.new("Frame")
     SliderDrag.Name = "SliderDrag"
-    SliderDrag.Parent = ItemParent -- Замените ItemParent на вашу переменную, указывающую на родительский элемент
+    SliderDrag.Parent = tabContent
     SliderDrag.Size = UDim2.new(0, 0, 1, 0)
     SliderDrag.BackgroundColor3 = SliderConfig.Color
     SliderDrag.BackgroundTransparency = 0.3
@@ -287,7 +287,7 @@ function Lib:AddSlider(SliderConfig.Name, SliderConfig.Min, SliderConfig.Max, Sl
 
     local SliderBar = Instance.new("Frame")
     SliderBar.Name = "SliderBar"
-    SliderBar.Parent = ItemParent -- Замените ItemParent на вашу переменную, указывающую на родительский элемент
+    SliderBar.Parent = tabContent
     SliderBar.Size = UDim2.new(1, -24, 0, 26)
     SliderBar.Position = UDim2.new(0, 12, 0, 30)
     SliderBar.BackgroundColor3 = SliderConfig.Color
