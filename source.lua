@@ -277,3 +277,5 @@ function Lib:MakeToggle(tab, toggleName, callback)
 
     return toggle
 end
+
+return Lib
