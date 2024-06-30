@@ -16,7 +16,6 @@ ScreenGui.Name = "Lib"
 local mainframe
 local tablist
 local tabs = {}
-local functionslist
 local buttons = {}
 local toggles = {}
 
@@ -28,12 +27,17 @@ function Lib:CreateWindow(name)
         mainframe.BackgroundColor3 = Color3.new(0.5, 0.5, 0.5)
         mainframe.BorderSizePixel = 0
 
-        functionslist = Instance.new("ScrollingFrame", mainframe)
-        functionslist.Size = UDim2.new(0, 400, 0, 350)  -- Adjusted size to fit buttons/toggles vertically
-        functionslist.Position = UDim2.new(0.5, -200, 0.5, -150)
+        local functionslist = Instance.new("ScrollingFrame", mainframe)
+        functionslist.Size = UDim2.new(0, 600, 0, 350)
+        functionslist.Position = UDim2.new(0.5, -300, 0.5, -150)
         functionslist.BackgroundColor3 = Color3.new(0.5, 0.5, 0.5)
         functionslist.BorderSizePixel = 0
-        functionslist.ScrollBarThickness = 12
+
+        tablist = Instance.new("ScrollingFrame", mainframe)
+        tablist.Size = UDim2.new(0, 200, 0, 350)
+        tablist.Position = UDim2.new(0.5, -300, 0.5, -150)
+        tablist.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
+        tablist.BorderSizePixel = 0
 
         local tabframe = Instance.new("Frame", mainframe)
         tabframe.Size = UDim2.new(1, 0, 0, 50)
@@ -220,7 +224,7 @@ function Lib:CreateButton(tab, buttonName, callback)
     button.TextColor3 = Color3.new(1, 1, 1)
     button.Font = Enum.Font.GothamBold
     button.TextSize = 24
-    button.Parent = functionslist  -- Parent to functionslist instead of tab
+    button.Parent = tab
 
     button.MouseButton1Click:Connect(function()
         callback()
@@ -228,10 +232,10 @@ function Lib:CreateButton(tab, buttonName, callback)
 
     table.insert(buttons, button)
 
-    local listLayout = functionslist:FindFirstChildOfClass("UIListLayout")
+    local listLayout = tab:FindFirstChildOfClass("UIListLayout")
     if not listLayout then
         listLayout = Instance.new("UIListLayout")
-        listLayout.Parent = functionslist
+        listLayout.Parent = tab
         listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         listLayout.SortOrder = Enum.SortOrder.LayoutOrder
         listLayout.Padding = UDim.new(0, 2.5)
@@ -250,7 +254,7 @@ function Lib:MakeToggle(tab, toggleName, callback)
     toggle.TextColor3 = Color3.new(1, 1, 1)
     toggle.Font = Enum.Font.GothamBold
     toggle.TextSize = 24
-    toggle.Parent = functionslist  -- Parent to functionslist instead of tab
+    toggle.Parent = tab
 
     local isOn = false
 
@@ -262,10 +266,10 @@ function Lib:MakeToggle(tab, toggleName, callback)
 
     table.insert(toggles, toggle)
 
-    local listLayout = functionslist:FindFirstChildOfClass("UIListLayout")
+    local listLayout = tab:FindFirstChildOfClass("UIListLayout")
     if not listLayout then
         listLayout = Instance.new("UIListLayout")
-        listLayout.Parent = functionslist
+        listLayout.Parent = tab
         listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         listLayout.SortOrder = Enum.SortOrder.LayoutOrder
         listLayout.Padding = UDim.new(0, 2.5)
