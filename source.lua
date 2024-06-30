@@ -228,11 +228,54 @@ function Lib:CreateButton(tab, buttonName, callback)
     button.MouseButton1Click:Connect(callback)
 end
 
+function Lib:AddToggle(tab, toggleName, defaultState, callback)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Name = toggleName .. "Frame"
+    toggleFrame.Size = UDim2.new(0, 200, 0, 50)
+    toggleFrame.BackgroundColor3 = Color3.new(0.75, 0.75, 0.75)
+    toggleFrame.BorderSizePixel = 0
+    toggleFrame.Parent = mainframe:FindFirstChild("FunctionsList")
+
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Name = toggleName .. "Label"
+    toggleLabel.Size = UDim2.new(1, -50, 1, 0)
+    toggleLabel.Position = UDim2.new(0, 50, 0, 0)
+    toggleLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    toggleLabel.BorderSizePixel = 0
+    toggleLabel.Text = toggleName
+    toggleLabel.TextColor3 = Color3.new(0, 0, 0)
+    toggleLabel.Font = Enum.Font.Gotham
+    toggleLabel.TextSize = 18
+    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    toggleLabel.Parent = toggleFrame
+
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Name = toggleName .. "Toggle"
+    toggleButton.Size = UDim2.new(0, 30, 0, 30)
+    toggleButton.Position = UDim2.new(0, 10, 0, 10)
+    toggleButton.AutoButtonColor = false
+    toggleButton.BackgroundColor3 = defaultState and Color3.new(0.1, 0.8, 0.1) or Color3.new(0.8, 0.1, 0.1)
+    toggleButton.BorderSizePixel = 0
+    toggleButton.Text = ""
+    toggleButton.Parent = toggleFrame
+
+    local toggleState = defaultState
+    toggles[toggleName] = toggleButton
+
+    toggleButton.MouseButton1Click:Connect(function()
+        toggleState = not toggleState
+        toggleButton.BackgroundColor3 = toggleState and Color3.new(0.1, 0.8, 0.1) or Color3.new(0.8, 0.1, 0.1)
+        callback(toggleState)
+    end)
+
+    return toggleFrame
+end
+
 function Lib:AddSlider(settings)
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Name = settings.Name .. "Frame"
     sliderFrame.Size = UDim2.new(0, 200, 0, 50)
-    sliderFrame.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
+    sliderFrame.BackgroundColor3 = Color3.new(0.75, 0.75, 0.75)
     sliderFrame.BorderSizePixel = 0
     sliderFrame.Position = UDim2.new(0, 0, 1, -100)
     sliderFrame.Parent = mainframe
