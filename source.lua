@@ -253,41 +253,9 @@ function Lib:CreateButton(tab, buttonName, callback)
     return button
 end
 
-function Lib:MakeToggle(tab, toggleName, callback)
-    local toggle = Instance.new("TextButton")
-    toggle.Name = toggleName
-    toggle.Size = UDim2.new(0, 200, 0, 50)
-    toggle.BackgroundColor3 = Color3.new(0.45, 0.45, 0.45)
-    toggle.BorderSizePixel = 0
-    toggle.Text = toggleName .. " Off"
-    toggle.TextColor3 = Color3.new(1, 1, 1)
-    toggle.Font = Enum.Font.GothamBold
-    toggle.TextSize = 24
-    toggle.Parent = tab
+function Lib:CreateSlider(tab, sliderName, minValue, maxValue, startValue, step, callback)
+    step = step or 1 -- Шаг по умолчанию равен 1, если не указан
 
-    local isOn = false
-
-    toggle.MouseButton1Click:Connect(function()
-        isOn = not isOn
-        toggle.Text = toggleName .. (isOn and " On" or " Off")
-        callback(isOn)
-    end)
-
-    table.insert(toggles, toggle)
-
-    local listLayout = tab:FindFirstChildOfClass("UIListLayout")
-    if not listLayout then
-        listLayout = Instance.new("UIListLayout")
-        listLayout.Parent = tab
-        listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-        listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        listLayout.Padding = UDim.new(0, 2.5)
-    end
-
-    return toggle
-end
-
-function Lib:CreateSlider(tab, sliderName, minValue, maxValue, startValue, callback)
     local slider = Instance.new("Frame")
     slider.Name = sliderName
     slider.Size = UDim2.new(0, 200, 0, 50)
@@ -328,6 +296,11 @@ function Lib:CreateSlider(tab, sliderName, minValue, maxValue, startValue, callb
                 local frameSize = slider.AbsoluteSize.X
                 local relativePos = (mousePos - framePos) / frameSize
                 local newValue = minValue + (maxValue - minValue) * math.clamp(relativePos, 0, 1)
+
+                -- Округляем newValue в соответствии с шагом
+                newValue = minValue + math.floor((newValue - minValue) / step) * step
+                newValue = math.clamp(newValue, minValue, maxValue)
+
                 updateSlider(newValue)
                 callback(newValue)
             end
@@ -356,5 +329,6 @@ function Lib:CreateSlider(tab, sliderName, minValue, maxValue, startValue, callb
 
     return slider
 end
+
 
 return Lib
